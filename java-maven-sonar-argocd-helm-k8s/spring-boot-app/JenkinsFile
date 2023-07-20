@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'louisndjock/techmax:latest'
+      image 'louisndjock/maven-docker-agent:latest'
       args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
     }
   }
@@ -16,7 +16,7 @@ pipeline {
     }
     stage('Static Code Analysis') {
       environment {
-        SONAR_URL = "http://3.215.181.213:9000"
+        SONAR_URL = "http://100.25.98.110:9000"
       }
       steps {
         withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
@@ -26,7 +26,7 @@ pipeline {
     }
     stage('Build and Push Docker Image') {
       environment {
-        DOCKER_IMAGE = "fadedstarboy/ultimate-cicd:${BUILD_NUMBER}"
+        DOCKER_IMAGE = "louisndjock/end-to-end-cicd:${BUILD_NUMBER}"
         // DOCKERFILE_LOCATION = "java-maven-sonar-argocd-helm-k8s/spring-boot-app/Dockerfile"
         REGISTRY_CREDENTIALS = credentials('docker-cred')
       }
@@ -43,13 +43,13 @@ pipeline {
     stage('Update Deployment File') {
         environment {
             GIT_REPO_NAME = "end-to-end-CI-CD"
-            GIT_USER_NAME = "fadedstarboy"
+            GIT_USER_NAME = "devopsstudygroupadmin"
         }
         steps {
             withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                 sh '''
-                    git config user.email "ishaanraghavjames@gmail.com"
-                    git config user.name "fadedstarboy"
+                    git config user.email "devopsstudygroup@gmail.com"
+                    git config user.name "devopsstudygroupadmin"
                     BUILD_NUMBER=${BUILD_NUMBER}
                     sed -i "s/replaceImageTag/${BUILD_NUMBER}/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
                     git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
